@@ -9,6 +9,6 @@ OUT="Main.swf"
   -static-link-runtime-shared-libraries=true \
   -source-path=src \
   -output="$OUT" \
-  src/Main.as
+  src/Main.mxml
 
 echo "✓ Built $OUT"
