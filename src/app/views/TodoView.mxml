@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+         xmlns:s="library://ns.adobe.com/flex/spark"
+         xmlns:mx="library://ns.adobe.com/flex/mx"
+         width="100%" height="100%">
+  <fx:Script>
+    <![CDATA[
+      import app.viewmodels.TodoViewModel;
+      import app.models.Todo;
+      import mx.events.FlexEvent;
+
+      [Bindable] public var viewModel:TodoViewModel;
+
+      private function onInputEnter(event:FlexEvent):void {
+        viewModel.addTodo();
+      }
+    ]]>
+  </fx:Script>
+
+  <s:VGroup horizontalCenter="0" verticalCenter="0" gap="16" width="600">
+    <!-- Header -->
+    <s:VGroup width="100%" gap="8">
+      <s:Label text="Todo App" fontSize="32" fontWeight="bold"/>
+      <s:Label text="MVVM + Dependency Injection Demo" fontSize="14" color="#666666"/>
+    </s:VGroup>
+
+    <!-- Input Section -->
+    <s:HGroup width="100%" gap="8" verticalAlign="middle">
+      <s:TextInput id="todoInput"
+                   text="@{viewModel.newTodoText}"
+                   width="100%"
+                   prompt="What needs to be done?"
+                   enabled="{!viewModel.busy}"
+                   enter="onInputEnter(event)"/>
+      <s:Button label="Add"
+                click="viewModel.addTodo()"
+                enabled="{!viewModel.busy &amp;&amp; viewModel.newTodoText != ''}"/>
+    </s:HGroup>
+
+    <!-- Todo List -->
+    <s:BorderContainer width="100%" height="400"
+                       backgroundColor="#F9F9F9"
+                       borderColor="#DDDDDD">
+      <s:List id="todoList"
+              dataProvider="{viewModel.todos}"
+              width="100%" height="100%"
+              enabled="{!viewModel.busy}">
+        <s:itemRenderer>
+          <fx:Component>
+            <s:ItemRenderer width="100%" autoDrawBackground="false">
+              <fx:Script>
+                <![CDATA[
+                  import app.models.Todo;
+                  import app.viewmodels.TodoViewModel;
+
+                  override public function set data(value:Object):void {
+                    super.data = value;
+                    if (value) {
+                      var todo:Todo = value as Todo;
+                      checkBox.selected = todo.completed;
+                      titleLabel.text = todo.title;
+                      titleLabel.setStyle("textDecoration", todo.completed ? "line-through" : "none");
+                      titleLabel.setStyle("color", todo.completed ? 0x999999 : 0x000000);
+                    }
+                  }
+
+                  private function onToggle():void {
+                    var vm:TodoViewModel = outerDocument.viewModel;
+                    vm.toggleTodo(data as Todo);
+                  }
+
+                  private function onRemove():void {
+                    var vm:TodoViewModel = outerDocument.viewModel;
+                    vm.removeTodo(data as Todo);
+                  }
+                ]]>
+              </fx:Script>
+
+              <s:HGroup width="100%" height="40" gap="8"
+                        verticalAlign="middle" paddingLeft="8" paddingRight="8">
+                <s:CheckBox id="checkBox" change="onToggle()"/>
+                <s:Label id="titleLabel" width="100%"/>
+                <s:Button label="×"
+                          fontSize="18"
+                          color="#CC0000"
+                          click="onRemove()"/>
+              </s:HGroup>
+            </s:ItemRenderer>
+          </fx:Component>
+        </s:itemRenderer>
+      </s:List>
+    </s:BorderContainer>
+
+    <!-- Stats & Actions -->
+    <s:HGroup width="100%" verticalAlign="middle">
+      <s:Label text="{viewModel.activeCount} active, {viewModel.completedCount} completed"
+               fontSize="12" color="#666666"/>
+      <s:Spacer width="100%"/>
+      <s:Button label="Clear Completed"
+                click="viewModel.clearCompleted()"
+                enabled="{!viewModel.busy &amp;&amp; viewModel.completedCount > 0}"
+                fontSize="11"/>
+    </s:HGroup>
+
+    <!-- Loading Indicator -->
+    <s:Label text="Loading..."
+             visible="{viewModel.busy}"
+             includeInLayout="{viewModel.busy}"
+             fontSize="12"
+             color="#0066CC"/>
+  </s:VGroup>
+</s:Group>
